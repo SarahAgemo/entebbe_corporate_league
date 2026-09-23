@@ -9,125 +9,84 @@ Find-and-replace it across all files (`*.html`, `stories/*.html`, `sitemap.xml`,
 ## Structure
 
 ```
-index.html            Home: video hero, value proposition, why-join cards, two leagues, latest stories, partner carousel
-about.html            Our story, numbers, photos, mission & vision, services
-activities.html       Activity cards, filterable by All / Corporate / Kids Academy
-gallery.html          Corporate vs Kids Academy, then by sport (and age group for kids), with lightbox
-updates.html          News & highlights, Latest updates (timeline), Exclusive stories
-registration.html     Fees, eligibility, steps, and a form for company or child entry
-stories/              One page per news article or exclusive story (own URL = better search ranking)
-404.html              "Page not found" page
-sitemap.xml           List of pages for Google/Bing
-robots.txt            Tells search engines where the sitemap is
-site.webmanifest      App name/icons when saved to a phone home screen
-css/styles.css        All styling, mobile-first
-js/main.js            Behaviour. The CONFIG block at the top holds the form endpoint and email
-pictures/             Every image, icon and the hero video
+index.html                  Home: what ECL is, what we do, the two sides of ECL, value for each audience, green action, news, partners
+corporate-league.html       Disciplines, what organisations gain, how a season works
+academy.html                ECL Sports Academy: year-round programme, what children do, progression, parent information
+kids-league.html            Kids League: the children's competition and its calendar
+environment.html            Environment & community: ecosystem restoration and how to join in
+partners.html               Why partner, ways to partner, current partners + the partnership enquiry form
+news.html                   News & highlights (filterable), latest updates, exclusive stories
+gallery.html                Photos by story category, then by sport
+about.html                  Our story, numbers, mission and vision
+join.html                   Chooses a route (organisation / child / partner) and lists contact details
+register-organisation.html  Corporate League registration form
+register-child.html         Sports Academy enrolment form
+stories/                    One page per news article or story
+404.html, sitemap.xml, robots.txt, site.webmanifest
+css/styles.css              All styling, mobile-first
+js/main.js                  Behaviour. The CONFIG block at the top holds the form endpoint and email
+pictures/                   Photos, logo files and icons
 ```
 
-The Calendar page has been removed.
+## How ECL is presented
+- **ECL** is the whole organisation: corporate sport, networking, wellness, team building, community engagement, CSR and ecosystem restoration.
+- **Corporate League** is the platform for organisations.
+- **ECL Sports Academy** is a year-round youth programme in its own right, running through school terms and holidays.
+- **Kids League** is the Academy's competition, with its own calendar peaking in the third-term school break.
+- Nothing on the site says the Academy happens only on corporate match days.
 
-## What changed for SEO
-- **All content is in the HTML.** Gallery, activities, partners and updates used to be drawn by JavaScript. They're now plain HTML that search engines can read.
-- **Every page has** a unique title (under ~60 characters) and description, a canonical URL, and Open Graph/Twitter tags for link previews on WhatsApp, Facebook, X and LinkedIn.
-- **Structured data (JSON-LD)** tells Google this is a sports organisation in Entebbe, with contacts, venue and Instagram. It also marks up breadcrumbs on every inner page and articles on each story page.
-- **Each story has its own page** under `stories/` so it can rank and be shared on its own.
-- **Other basics:** `sitemap.xml`, `robots.txt`, a 404 page, descriptive image alt text, one `<h1>` per page, and width/height on every image to prevent layout jumps.
-- **After launch:** submit `sitemap.xml` in Google Search Console and create a **Google Business Profile** for the league at the venue. That profile is the biggest lever for "Entebbe" searches.
+## Brand and colour balance
+Colours are set once at the top of `css/styles.css`: lemon green `#B5DC1B`, black `#151515` and white.
 
-## Mobile-first
-- **Phones are the base design.** Larger screens add columns via `min-width` breakpoints at 560, 760 and 1024 px.
-- **Tap targets and form inputs.** Tap targets are at least 44 px. Form inputs use 16 px text so iPhones don't zoom in.
-- **Filters.** Filter chips scroll sideways on phones.
-- **Hero video.** On phones, slow connections and data-saver mode, the video isn't downloaded at all; the poster photo shows instead.
-- **Header.** On phones the menu collapses, and the Corporate / Kids switch sits on its own row.
+Each area of the site leads with a different one of them, so the palette reads as identity rather than decoration:
+- **Black-led:** Home, Corporate League, Environment, News, Gallery, Join, Register an organisation
+- **Lemon-led:** Sports Academy, Kids League, Enrol a child, Partners (set by `data-area` on the `<body>` tag)
 
-## Adding content
+To change an area's treatment, change its `data-area` value. To add a new lemon-led page, add its `data-area` name to the selector list near the top of `css/styles.css`.
 
-### A latest update (short announcement)
-In `updates.html`, copy one `<li>` inside `<ol class="timeline">`, put it at the top, and edit the date and text.
-
-### A news item or exclusive story
-1. Copy an existing page in `stories/` (e.g. `why-we-plant-trees.html`) and rename it with a short hyphenated name.
-2. Edit the `<title>`, description, canonical/`og:url`, the JSON-LD headline and dates, the heading, image and body.
-3. Add a card for it in `updates.html`: a `news-card` for news, or a `story-card` for exclusive stories.
-4. Add its URL to `sitemap.xml`.
-
-### A gallery photo
-Save it in the right `pictures/` folder, then copy one `<li>` in `gallery.html` and change:
-- `data-league`: `corporate` or `kids`
-- `data-sport`
-- `data-age`: kids only
-- the image path, alt text and caption
-
-Add `class="is-wide"` for a large tile. The filter buttons update automatically.
-
-## Brand
-- **Colours** come from the ECL logo, and are set once at the top of `css/styles.css`:
-  - Lemon green `#B5DC1B`
-  - Black `#151515`
-  - White
-- **Corporate mode** uses black surfaces with lemon accents.
-- **Kids Academy mode** flips this: lemon surfaces with black accents, plus rounder shapes.
-- **Logo:** `pictures/logo/ecl-logo.svg` (full) and `ecl-mark.svg` (ECL letters only) are clean vector files taken from the supplied PDF. They take the colour of their surroundings, so the same file works in lemon, black or white.
-- **Icons and share image:** `favicon.svg`, `favicon.png`, `pictures/icons/*` and `og-image.jpg` are generated from the logo.
+**Logo:** `pictures/logo/ecl-logo.svg` (full) and `ecl-mark.svg` (letters only) are vector files taken from the supplied PDF. They take the colour of their surroundings, so one file works in lemon, black or white. Icons and the share image are generated from them.
 
 ## Photos
 
 ### Where they're used
 | Area | Photos |
 |---|---|
-| Kids Academy gallery | 17 football, 2 swimming |
-| Corporate gallery | 3 netball, 4 volleyball, 4 tug of war, 3 tree planting |
-| Activity cards | One photo per sport |
-| Home, About, Updates | League photos (tree planting, Kids Academy football) |
+| Gallery, Youth development | 17 Academy football, 2 swimming |
+| Gallery, Corporate sport | 3 netball, 4 volleyball, 4 tug of war |
+| Gallery, Environment & community | 3 tree planting |
+| Pages | Corporate disciplines, Academy, Kids League, Environment, Partners, Home |
 
-There are no placeholder images left. Partners and participating organisations show as text tiles until real logos are supplied.
-
-`pictures/image-fallback.jpg` (the logo on black) only appears if a photo file goes missing.
+There are no placeholder images. Partners and participating organisations show as text tiles until real logos are supplied. `pictures/image-fallback.jpg` (the logo on black) only appears if a photo file goes missing.
 
 ### ⚠️ Photo sources
-The netball, volleyball, tug of war and swimming photos appear to come from other events found online, not from ECL. For example:
-- One swimming photo shows another programme's branding.
-- One volleyball photo is a school match.
-- One netball photo is an international fixture.
+The netball, volleyball, tug of war and swimming photos appear to come from other events found online, not from ECL. Their captions are kept general and don't claim to be ECL events. Before launch, get permission to use them or replace them with ECL's own photos (save the new file with the same name).
 
-Their captions are kept general and don't say they're from ECL. Before launch, either get permission to use them or replace them with the league's own photos. Replace a photo by saving the new one with the same file name, e.g. `pictures/corporate/netball/netball-01.jpg`.
+### Gallery storytelling
+Photos are grouped by story, not only by sport: **Corporate sport**, **Youth development**, **Environment & community**. Add more categories (networking, partners, celebrations) by setting `data-cat` on a gallery `<li>` — the filter buttons build themselves from what's there.
 
-### Adding more gallery photos
+### Adding photos
 1. Export as JPG (iPhone HEIC files won't display in browsers).
-2. Resize to 1600 px on the long side, plus an 800 px copy named `…-sm.jpg`. The small copy is optional for images under ~900 px.
-3. Put the files in the right folder, then copy one `<li>` in `gallery.html` and edit it. Sport filter buttons appear automatically for any sport that has photos.
-
-### Age groups
-The gallery age filter appears once photos are tagged, e.g. `data-age="Under 8"` in `gallery.html`.
+2. Resize to 1600 px on the long side, plus an 800 px copy named `…-sm.jpg` (optional for small images).
+3. Copy one `<li>` in `gallery.html` and edit `data-cat`, `data-sport`, the path, alt text and caption.
 
 ### Hero video
-There's no video yet, so the hero shows a photo, which changes with the Corporate/Kids switch.
-1. Add `pictures/hero/hero-video.mp4`.
+There's no video yet, so the hero shows a photo.
+1. Add `pictures/hero/hero-video.mp4` (10–20 s loop, muted, 1280×720, under 8 MB).
 2. Set `data-src="pictures/hero/hero-video.mp4"` on the `<video>` tag in `index.html`.
 
-## Registration form
-Create a free form at https://formspree.io and paste the endpoint into `formEndpoint` at the top of `js/main.js`. Without it, the form opens the visitor's email app pre-filled and addressed to the league.
+## Adding content
+- **A short update:** copy an `<li>` at the top of `<ol class="timeline">` in `news.html`.
+- **A news item or story:** copy a page in `stories/`, edit its title, description, canonical URL, JSON-LD and body, add a card in `news.html` (set `data-area` so the filters work), and add the URL to `sitemap.xml`.
+- **Forms:** there are three, each on its own page, and each marked with `data-kind` on the `<form>` tag:
+  - `register-organisation.html` (`corporate`)
+  - `register-child.html` (`academy`)
+  - `partners.html#enquiry` (`partner`)
+  Paste a free Formspree endpoint into `formEndpoint` at the top of `js/main.js` and all three submit to it. Each submission includes an `enquiry_type` field so you can tell them apart. Without an endpoint, a form opens the visitor's email app pre-filled with a subject naming the form.
 
-## Please confirm before launch
-- **Domain**: see the top of this file.
-- **Venue**: Lake Victoria Primary School (the original brief said "Lake Victory").
-- **Season fee**: UGX 2,000,000 per company per season. Kawowo reported UGX 1,000,000 per team for 2024.
-- **Kids Academy age groups**: Under 8 / Under 11 / Under 14 in the registration form are placeholders.
-- **Kids Academy venue**: the football photos were taken at ESA Park, not the school playground. The site doesn't name a Kids Academy venue. Add it once confirmed.
-- **Photo consent**: the gallery shows children. Confirm parents have agreed to their photos being published.
-- **Photo rights**: see "Photo sources" above.
-- **Partner logos**: send official logo files to replace the text tiles.
-- **Kids Academy details**: the fee, eligibility and swimming venue aren't published anywhere.
-- **Written content**:
-  - The mission, vision and "Our story" text are drafts.
-  - The two exclusive stories ("Why we plant trees", "Six-a-side") are drafts in the league's voice. Ask the organisers to review them and add real quotes.
-- **Update dates**: "September 2026" on the website-launch and photo-appeal updates should match the real launch date.
-- **Contacts**: the league email and phone numbers come from 2024 press coverage.
+## SEO
+Unique titles and descriptions per page, canonical URLs, Open Graph and Twitter tags, JSON-LD (organisation, breadcrumbs, articles), sitemap, robots file, 404 page, alt text on every image, one `<h1>` per page, and width/height on images to prevent layout shift.
 
-## Accessibility
-- **Navigation and controls:** keyboard-accessible menu, filters and lightbox, with visible focus.
-- **Skip link and breadcrumbs:** a "skip to content" link on every page and breadcrumbs on inner pages.
-- **Reduced motion:** respected; the carousel stops and the video isn't loaded.
-- **Media controls:** a pause button on the hero video, and the carousel pauses on hover or focus.
+After launch: submit `sitemap.xml` in Google Search Console and create a Google Business Profile for ECL.
+
+## Still to confirm
+See `CONTENT-QUESTIONS.md` for the list of facts the site still needs from ECL.

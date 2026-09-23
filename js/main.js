@@ -1,6 +1,6 @@
 /* Entebbe Corporate League — site behaviour
-   All content lives in the HTML so search engines can read it.
-   This script only adds filtering, theming and interactions.   */
+   All content is in the HTML so search engines can read it.
+   This script only adds filtering, navigation and form handling. */
 (function () {
   "use strict";
 
@@ -15,34 +15,7 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const params = new URLSearchParams(location.search);
-
-  /* ---------------- League switch (two-in-one) ---------------- */
-  const STORE = "ecl-league";
-  const listeners = [];
-  function readLeague() {
-    const q = params.get("league");
-    if (q === "kids" || q === "corporate") return q;
-    try { return localStorage.getItem(STORE) || "corporate"; } catch (e) { return "corporate"; }
-  }
-  function setLeague(league, silent) {
-    document.body.dataset.league = league;
-    try { localStorage.setItem(STORE, league); } catch (e) { /* private mode */ }
-    $$(".league-switch button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.league === league)));
-    $$("[data-corporate-text]").forEach((el) => {
-      el.textContent = league === "kids" ? el.dataset.kidsText : el.dataset.corporateText;
-    });
-    $$("img[data-kids-src]").forEach((im) => {
-      if (!im.dataset.corporateSrc) { im.dataset.corporateSrc = im.getAttribute("src"); im.dataset.corporateSrcset = im.getAttribute("srcset") || ""; }
-      const kids = league === "kids";
-      im.srcset = kids ? (im.dataset.kidsSrcset || "") : im.dataset.corporateSrcset;
-      im.src = kids ? im.dataset.kidsSrc : im.dataset.corporateSrc;
-    });
-    const meta = $('meta[name="theme-color"]');
-    if (meta) meta.content = league === "kids" ? "#B5DC1B" : "#151515";
-    if (!silent) listeners.forEach((fn) => fn(league));
-  }
-  $$(".league-switch button").forEach((b) => b.addEventListener("click", () => setLeague(b.dataset.league)));
-  setLeague(readLeague(), true);
+  const root = document.documentElement.dataset.root || "";
 
   /* ---------------- Mobile nav ---------------- */
   const menuBtn = $(".menu-btn");
@@ -55,15 +28,15 @@
       menuBtn.textContent = open ? "Close" : "Menu";
     });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
-    window.matchMedia("(min-width: 1024px)").addEventListener("change", close);
+    window.matchMedia("(min-width: 1240px)").addEventListener("change", close);
   }
 
   /* ---------------- Missing image fallback ---------------- */
-  const root = document.documentElement.dataset.root || "";
   document.addEventListener("error", (e) => {
     const img = e.target;
     if (img.tagName !== "IMG" || img.dataset.fallback) return;
     img.dataset.fallback = "1";
+    img.removeAttribute("srcset");
     img.src = root + "pictures/image-fallback.jpg";
   }, true);
 
@@ -77,7 +50,7 @@
       !conn.saveData && !/2g/.test(conn.effectiveType || "");
     if (ok && video.dataset.src) {
       video.src = video.dataset.src;
-      video.addEventListener("canplay", () => { video.hidden = false; vBtn && vBtn.classList.add("is-ready"); }, { once: true });
+      video.addEventListener("canplay", () => { video.hidden = false; if (vBtn) vBtn.classList.add("is-ready"); }, { once: true });
       video.addEventListener("error", () => video.remove());
       video.play().catch(() => {});
       if (vBtn) {
@@ -90,63 +63,59 @@
     }
   }
 
-  /* ---------------- Partner marquee: duplicate for seamless loop ---------------- */
+  /* ---------------- Partner marquee: duplicate for a seamless loop ---------------- */
   $$(".marquee__track").forEach((track) => {
     $$(":scope > li", track).forEach((li) => {
       const copy = li.cloneNode(true);
       copy.setAttribute("aria-hidden", "true");
-      $$("img", copy).forEach((i) => (i.alt = ""));
       track.appendChild(copy);
     });
   });
 
-  /* ---------------- Gallery ---------------- */
+  /* ---------------- Gallery: story categories, then sport ---------------- */
   const gallery = $("#gallery");
   if (gallery) {
     const items = $$(":scope > li", gallery);
-    const state = { league: document.body.dataset.league, sport: params.get("sport") || "All", age: "All" };
-    const tabs = $$(".league-tabs button");
+    const catChips = $("#cat-chips");
     const sportChips = $("#sport-chips");
-    const ageChips = $("#age-chips");
     const note = $("#gallery-note");
     const empty = $("#gallery-empty");
+    const state = { cat: params.get("cat") || "All", sport: "All" };
+    const uniq = (a) => [...new Set(a)];
 
-    const uniq = (arr) => [...new Set(arr)];
     function chipRow(el, label, values, current, key) {
       el.innerHTML = `<span class="chips__label">${label}</span>` +
         ["All", ...values].map((v) => `<button class="chip" type="button" data-${key}="${esc(v)}" aria-pressed="${v === current}">${esc(v)}</button>`).join("");
     }
 
     function render() {
-      const isKids = state.league === "kids";
-      tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.league === state.league)));
-      const inLeague = items.filter((li) => li.dataset.league === state.league);
-      const listed = (gallery.dataset[isKids ? "sportsKids" : "sportsCorporate"] || "").split("|").filter(Boolean);
-      chipRow(sportChips, "Sport", uniq([...listed, ...inLeague.map((li) => li.dataset.sport)]), state.sport, "sport");
-      const ages = uniq(inLeague.map((li) => li.dataset.age).filter(Boolean));
-      ageChips.hidden = !isKids || ages.length === 0;
-      if (!ageChips.hidden) chipRow(ageChips, "Age group", ages, state.age, "age");
+      chipRow(catChips, "Story", uniq(items.map((li) => li.dataset.cat)), state.cat, "cat");
+      const inCat = items.filter((li) => state.cat === "All" || li.dataset.cat === state.cat);
+      const sports = uniq(inCat.map((li) => li.dataset.sport).filter(Boolean));
+      sportChips.hidden = sports.length < 2;
+      if (!sportChips.hidden) chipRow(sportChips, "Sport", sports, state.sport, "sport");
 
       let shown = 0;
       items.forEach((li) => {
-        const d = li.dataset;
-        const match = d.league === state.league &&
-          (state.sport === "All" || d.sport === state.sport) &&
-          (!isKids || state.age === "All" || d.age === state.age);
+        const match = (state.cat === "All" || li.dataset.cat === state.cat) &&
+          (sportChips.hidden || state.sport === "All" || li.dataset.sport === state.sport);
         li.hidden = !match;
         if (match) shown++;
       });
       empty.hidden = shown > 0;
-      const et = $("#gallery-empty-title");
-      if (et) et.textContent = state.sport === "All" ? "No photos here yet" : `${state.sport} photos coming soon`;
-      note.textContent = `Showing ${shown} photo${shown === 1 ? "" : "s"} from the ${isKids ? "Kids Academy" : "Corporate league"}` +
-        (state.sport !== "All" ? `, ${state.sport}` : "") + (isKids && state.age !== "All" ? `, ${state.age}` : "");
+      note.textContent = `Showing ${shown} photo${shown === 1 ? "" : "s"}` +
+        (state.cat !== "All" ? `, ${state.cat}` : "") +
+        (!sportChips.hidden && state.sport !== "All" ? `, ${state.sport}` : "");
     }
 
-    tabs.forEach((t) => t.addEventListener("click", () => setLeague(t.dataset.league)));
-    listeners.push((league) => { state.league = league; state.sport = "All"; state.age = "All"; render(); });
-    sportChips.addEventListener("click", (e) => { const b = e.target.closest("[data-sport]"); if (b) { state.sport = b.dataset.sport; render(); } });
-    ageChips.addEventListener("click", (e) => { const b = e.target.closest("[data-age]"); if (b) { state.age = b.dataset.age; render(); } });
+    catChips.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-cat]");
+      if (b) { state.cat = b.dataset.cat; state.sport = "All"; render(); }
+    });
+    sportChips.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-sport]");
+      if (b) { state.sport = b.dataset.sport; render(); }
+    });
     render();
 
     const box = $("#lightbox");
@@ -154,11 +123,13 @@
       gallery.addEventListener("click", (e) => {
         const b = e.target.closest("button");
         if (!b) return;
-        const img = $("img", b);
+        const im = $("img", b);
         const cap = $("figcaption", b.closest("figure"));
-        $("img", box).src = img.currentSrc || img.src;
-        $("img", box).alt = img.alt;
-        $("p", box).textContent = cap ? cap.textContent.trim() : img.alt;
+        const target = $("img", box);
+        target.removeAttribute("srcset");
+        target.src = im.currentSrc || im.src;
+        target.alt = im.alt;
+        $("p", box).textContent = cap ? cap.textContent.trim() : im.alt;
         box.showModal();
       });
       $(".lightbox__close", box).addEventListener("click", () => box.close());
@@ -166,25 +137,21 @@
     }
   }
 
-  /* ---------------- Activities ---------------- */
-  const acts = $("#activities");
-  if (acts) {
-    const cards = $$(":scope > li", acts);
-    const tabs = $$(".league-tabs button");
-    let view = params.get("view") || "all";
-    function renderActs() {
-      tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.view === view)));
-      cards.forEach((c) => (c.hidden = !(view === "all" || c.dataset.leagues.split(" ").includes(view))));
+  /* ---------------- News filters ---------------- */
+  const newsList = $("#news-list");
+  if (newsList) {
+    const cards = $$(":scope > li", newsList);
+    const tabs = $$("#news-filters button");
+    let view = params.get("area") || "all";
+    function renderNews() {
+      tabs.forEach((t) => t.setAttribute("aria-selected", String(t.dataset.area === view)));
+      cards.forEach((c) => (c.hidden = !(view === "all" || c.dataset.area.split(" ").includes(view))));
     }
-    tabs.forEach((t) => t.addEventListener("click", () => {
-      view = t.dataset.view;
-      if (view !== "all") setLeague(view, true);
-      renderActs();
-    }));
-    renderActs();
+    tabs.forEach((t) => t.addEventListener("click", () => { view = t.dataset.area; renderNews(); }));
+    renderNews();
   }
 
-  /* ---------------- Updates: highlight current section chip ---------------- */
+  /* ---------------- In-page section nav ---------------- */
   const jump = $(".jump");
   if (jump && "IntersectionObserver" in window) {
     const links = $$("a.chip", jump);
@@ -197,46 +164,32 @@
     links.forEach((a) => { const t = $(a.hash); if (t) io.observe(t); });
   }
 
-  /* ---------------- Share buttons (story pages) ---------------- */
+  /* ---------------- Share buttons ---------------- */
   $$("[data-share]").forEach((a) => {
     const url = encodeURIComponent(location.href.split("#")[0]);
     const text = encodeURIComponent(document.title);
-    const map = {
+    a.href = {
       whatsapp: `https://wa.me/?text=${text}%20${url}`,
       x: `https://x.com/intent/post?text=${text}&url=${url}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
-    };
-    a.href = map[a.dataset.share];
+    }[a.dataset.share];
   });
 
-  /* ---------------- Registration form ---------------- */
+  /* ---------------- Forms (one per page: corporate, academy, partner) ---------------- */
   const form = $("#reg-form");
   if (form) {
-    const typeInputs = $$('input[name="league"]', form);
-    const corpBlock = $("#corp-fields");
-    const kidsBlock = $("#kids-fields");
-
-    function syncType() {
-      const v = (typeInputs.find((i) => i.checked) || {}).value || "corporate";
-      corpBlock.hidden = v !== "corporate";
-      kidsBlock.hidden = v !== "kids";
-      $$("input, select, textarea", corpBlock).forEach((el) => (el.disabled = v !== "corporate"));
-      $$("input, select, textarea", kidsBlock).forEach((el) => (el.disabled = v !== "kids"));
-    }
-    typeInputs.forEach((i) => i.addEventListener("change", syncType));
-    const startKids = document.body.dataset.league === "kids";
-    typeInputs.forEach((i) => (i.checked = i.value === (startKids ? "kids" : "corporate")));
-    syncType();
+    const kind = form.dataset.kind || "corporate";
 
     function setErr(input, msg) {
       const box = form.querySelector(`[data-error-for="${input.name}"]`);
       input.setAttribute("aria-invalid", msg ? "true" : "false");
       if (box) box.textContent = msg || "";
     }
+
     function validate() {
       let ok = true;
-      $$("input:not([disabled]), select:not([disabled])", form).forEach((el) => {
+      $$("input, select, textarea", form).forEach((el) => {
         if (el.type === "checkbox" || el.type === "radio") return;
         let msg = "";
         if (el.required && !el.value.trim()) msg = "This field is required.";
@@ -246,15 +199,27 @@
         setErr(el, msg);
         if (msg) ok = false;
       });
-      if (!corpBlock.hidden) {
+      if (kind === "corporate") {
         const any = $$('input[name="disciplines"]:checked', form).length > 0;
         $("#disc-error").textContent = any ? "" : "Choose at least one discipline.";
         const agree = $("#agree-ids");
         $("#agree-error").textContent = agree.checked ? "" : "Confirm that every player is a current employee aged 25 or over.";
         ok = ok && any && agree.checked;
       }
+      if (kind === "academy") {
+        const any = $$('input[name="academy_sport"]:checked', form).length > 0;
+        $("#sport-error").textContent = any ? "" : "Choose at least one sport.";
+        ok = ok && any;
+      }
       return ok;
     }
+
+    const SENT = {
+      corporate: "Registration sent. The ECL team will email you about payment and ID verification.",
+      academy: "Enrolment sent. The Academy team will contact you about training days, venue and fees.",
+      partner: "Enquiry sent. The ECL team will get back to you to discuss options."
+    };
+    const SUBJECT = { corporate: "Organisation registration", academy: "Academy enrolment", partner: "Partnership enquiry" };
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -268,21 +233,23 @@
         return;
       }
       const data = new FormData(form);
+      data.append("enquiry_type", kind);
       if (CONFIG.formEndpoint) {
         try {
           const res = await fetch(CONFIG.formEndpoint, { method: "POST", body: data, headers: { Accept: "application/json" } });
           if (!res.ok) throw new Error(res.status);
-          form.reset(); syncType();
-          status.textContent = "Registration sent. The league team will email you to confirm payment and ID verification.";
+          form.reset();
+          status.textContent = SENT[kind];
           status.classList.add("is-ok");
         } catch (err) {
-          status.textContent = `Registration could not be sent. Check your connection and try again, or email ${CONFIG.contactEmail}.`;
+          status.textContent = `That could not be sent. Check your connection and try again, or email ${CONFIG.contactEmail}.`;
           status.classList.add("is-bad");
         }
       } else {
         const lines = [...data.entries()].map(([k, v]) => `${k}: ${v}`).join("\n");
-        location.href = `mailto:${CONFIG.contactEmail}?subject=${encodeURIComponent("League registration: " + (data.get("company") || data.get("child_name") || ""))}&body=${encodeURIComponent(lines)}`;
-        status.textContent = "Your email app should open with the registration filled in. Press send to finish.";
+        const who = data.get("company") || data.get("child_name") || data.get("partner_org") || "";
+        location.href = `mailto:${CONFIG.contactEmail}?subject=${encodeURIComponent(SUBJECT[kind] + ": " + who)}&body=${encodeURIComponent(lines)}`;
+        status.textContent = "Your email app should open with the details filled in. Press send to finish.";
         status.classList.add("is-ok");
       }
     });

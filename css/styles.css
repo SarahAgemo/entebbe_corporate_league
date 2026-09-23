@@ -2,7 +2,7 @@
    Entebbe Corporate League — shared styles (mobile-first)
    Base rules target phones. min-width queries add layout
    for larger screens: 560 / 760 / 1024px.
-   Two-in-one theming: <body data-league="corporate|kids">
+   Area theming: <body data-area="corporate|academy|kids-league|…">
    ========================================================= */
 
 :root {
@@ -44,10 +44,11 @@
   --header-h: 104px;
 }
 @media (min-width: 760px) { :root { --gutter: 2rem; } }
-@media (min-width: 1024px) { :root { --gutter: 2.5rem; --header-h: 76px; } }
+@media (min-width: 1240px) { :root { --gutter: 2.5rem; --header-h: 76px; } }
 
-body[data-league="kids"] {
-  /* Kids Academy: same palette, flipped. Lemon surfaces, black accents */
+/* Area identity: every part of ECL uses the same palette with a different
+   lead colour, so the brand reads as one system. "lake" = lead surface. */
+[data-area="academy"], [data-area="kids-league"], [data-area="partners"], .area-lemon {
   --lake: var(--lemon);
   --lake-2: #A6CB12;
   --on-lake: var(--black);
@@ -57,13 +58,15 @@ body[data-league="kids"] {
   --kit: var(--black);
   --kit-ink: var(--lemon);
   --kit-hover: var(--black-2);
-  --chalk: #FAFCF1;
-  --line: rgba(0, 0, 0, .14);
-  --font-display: "Baloo 2", "Trebuchet MS", sans-serif;
-  --r-sm: 10px;
-  --r-md: 18px;
-  --r-lg: 28px;
 }
+[data-area="academy"], [data-area="kids-league"] {
+  --chalk: #FAFCF1;
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+}
+[data-area="kids-league"] { --font-display: "Baloo 2", "Trebuchet MS", sans-serif; }
+[data-area="kids-league"] :is(h1, h2, h3) { line-height: 1.1; }
 
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
@@ -97,7 +100,6 @@ h1 { font-size: clamp(2.4rem, 9vw, 5rem); font-weight: 900; }
 h2 { font-size: clamp(1.9rem, 6vw, 3.1rem); font-weight: 800; }
 h3 { font-size: 1.4rem; font-weight: 800; }
 @media (min-width: 760px) { h3 { font-size: 1.55rem; } }
-body[data-league="kids"] :is(h1, h2, h3) { line-height: 1.1; }
 
 p { margin: 0 0 1em; max-width: 68ch; }
 .lead { font-size: 1.1rem; color: var(--muted); }
@@ -109,6 +111,8 @@ p { margin: 0 0 1em; max-width: 68ch; }
 @media (min-width: 1024px) { .section { padding-block: 6.5rem; } }
 .section--lake { background: var(--lake); color: var(--on-lake); }
 .section--lake :is(.lead, p) { color: var(--on-lake-soft); }
+.section--lake > .wrap a:not(.btn) { color: var(--on-lake); text-decoration-color: currentColor; }
+.section--lake :is(.programme, .glance, .activity, .news-card, .why, .pillar, .tier) :is(p, .lead) { color: var(--muted); }
 .section--white { background: var(--surface); }
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -149,7 +153,7 @@ p { margin: 0 0 1em; max-width: 68ch; }
 .brand { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: .6rem; color: var(--on-lake); text-decoration: none; min-height: 44px; }
 .brand__mark { width: 64px; flex: none; color: var(--kit); display: block; line-height: 0; }
 .brand__mark svg { width: 100%; height: auto; }
-.brand__name { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; line-height: .95; }
+.brand__name { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; line-height: 1; }
 .brand__name small { display: none; font-family: var(--font-body); font-weight: 400; font-size: .75rem; opacity: .75; }
 
 .menu-btn {
@@ -158,15 +162,7 @@ p { margin: 0 0 1em; max-width: 68ch; }
   border-radius: var(--r-sm); padding: .4rem .75rem; font: 700 .95rem var(--font-body); cursor: pointer;
 }
 
-.league-switch { order: 3; width: 100%; display: flex; padding: 3px; background: var(--on-lake-faint); border-radius: 999px; }
-.league-switch button {
-  flex: 1; min-height: 38px;
-  font: 700 .85rem/1 var(--font-body);
-  color: var(--on-lake); background: transparent; border: 0;
-  padding: .5rem .8rem; border-radius: 999px; cursor: pointer; white-space: nowrap;
-}
-.league-switch button[aria-pressed="true"] { background: var(--kit); color: var(--kit-ink); }
-
+.header-cta { order: 3; width: 100%; }
 .nav {
   display: none; order: 4; width: 100%;
   flex-direction: column;
@@ -184,17 +180,25 @@ p { margin: 0 0 1em; max-width: 68ch; }
   .brand__name { font-size: 1.3rem; }
   .brand__name small { display: block; }
 }
-@media (min-width: 1024px) {
-  .brand { flex: 0 1 auto; margin-right: auto; }
+@media (min-width: 1240px) {
+  .brand { flex: 0 0 auto; order: 0; margin-right: 1.5rem; }
+  .brand__name { white-space: nowrap; font-size: 1.2rem; }
+  .brand__name small { display: none; }
+  .brand__mark { width: 70px; }
+  .nav { order: 1; margin-right: auto; }
+  .header-cta { order: 2; }
   .site-header .wrap { flex-wrap: nowrap; gap: 1.25rem; min-height: 72px; padding-block: 0; }
   .brand__mark { width: 78px; }
   .menu-btn { display: none; }
   .nav { display: flex; order: 0; width: auto; flex-direction: row; gap: .15rem; padding: 0; }
-  .nav a { padding: .55rem .7rem; border: 0; border-radius: var(--r-sm); min-height: 0; font-size: .95rem; }
+  .nav { gap: 0; }
+  .nav a { padding: .5rem .45rem; border: 0; border-radius: var(--r-sm); min-height: 0; font-size: .88rem; white-space: nowrap; }
   .nav a:hover { background: var(--on-lake-faint); }
   .nav a[aria-current="page"] { text-decoration: none; box-shadow: inset 0 -3px 0 var(--kit); }
-  .league-switch { order: 0; width: auto; }
-  .league-switch button { flex: none; padding: .55rem .85rem; }
+  .header-cta { width: auto; }
+  .nav__register { display: none; }
+  .nav a[data-home] { display: none; }   /* the logo is the home link on desktop */
+  .site-header .wrap { width: min(100% - 2 * var(--gutter), 1280px); }
 }
 
 /* ---------- Home hero ---------- */
@@ -206,7 +210,6 @@ p { margin: 0 0 1em; max-width: 68ch; }
 }
 @media (min-width: 760px) { .hero { min-height: min(88vh, 860px); } }
 .hero__video, .hero__poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; z-index: -3; }
-body[data-league="kids"] .hero__poster { object-position: 50% 12%; }
 .hero::before {
   content: ""; position: absolute; inset: 0; z-index: -2;
   background: linear-gradient(180deg, rgba(21,21,21,.3) 0%, rgba(21,21,21,.62) 42%, var(--black) 100%);
@@ -221,7 +224,6 @@ body[data-league="kids"] .hero__poster { object-position: 50% 12%; }
 .hero__title span:nth-child(2) { color: var(--lemon); }
 .hero .btn--kit { background: var(--lemon); color: var(--black); }
 .hero .btn--kit:hover { background: var(--white); }
-body[data-league="kids"] .hero__title { text-transform: none; line-height: .92; }
 .hero__sub { font-size: 1.05rem; max-width: 44ch; color: rgba(255,255,255,.92); }
 .hero__actions { display: grid; gap: .7rem; margin-top: 1.4rem; }
 .hero__facts {
@@ -268,6 +270,7 @@ body[data-league="kids"] .hero__title { text-transform: none; line-height: .92; 
 }
 .photo-frame { position: relative; margin: 0; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow); }
 .photo-frame img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.section .photo-frame:not(.split .photo-frame) img { aspect-ratio: 21 / 9; }
 .photo-frame figcaption { position: absolute; inset: auto 0 0; padding: 2rem 1rem .8rem; background: linear-gradient(transparent, rgba(0,0,0,.65)); color: #fff; font-size: .9rem; }
 
 .checks { list-style: none; padding: 0; margin: 1.25rem 0; }
@@ -607,3 +610,66 @@ body[data-league="kids"] .hero__title { text-transform: none; line-height: .92; 
 .footer-base { max-width: none; margin: 2rem 0 0; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,.15); font-size: .85rem; }
 
 .eyebrow-note { font-size: .95rem; color: var(--muted); }
+
+.logo-grid { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+
+/* ---------- Pillars (what ECL is) ---------- */
+.pillars { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .pillars { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1024px) { .pillars { grid-template-columns: repeat(5, 1fr); gap: 1.25rem; } }
+.pillar { background: var(--surface); border-radius: var(--r-md); padding: 1.25rem; border-top: 5px solid var(--lemon); }
+.pillar:nth-child(even) { border-top-color: var(--black); }
+.pillar h3 { font-size: 1.2rem; margin-bottom: .35em; }
+.pillar p { color: var(--muted); margin: 0; font-size: .95rem; }
+.pillar__icon { display: block; margin-bottom: .6rem; color: var(--ink); }
+
+/* ---------- Audience value blocks ---------- */
+.audiences { display: grid; gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 860px) { .audiences { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; } }
+.audience { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.5rem; display: flex; flex-direction: column; }
+.audience h3 { font-size: 1.45rem; }
+.audience ul { list-style: none; padding: 0; margin: 0 0 1.25rem; }
+.audience li { position: relative; padding-left: 1.6rem; margin-bottom: .5rem; font-size: .97rem; }
+.audience li::before { content: ""; position: absolute; left: 0; top: .55em; width: .7rem; height: .7rem; border-radius: 2px; background: var(--lemon); }
+.audience .btn { margin-top: auto; align-self: start; }
+.audience--dark { background: var(--black); color: #fff; border-color: var(--black); }
+.audience--lemon { background: var(--lemon); border-color: var(--lemon); }
+.audience--lemon li::before { background: var(--black); }
+
+/* ---------- Programme steps ---------- */
+.programme { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; counter-reset: pstep; }
+@media (min-width: 760px) { .programme { grid-template-columns: repeat(4, 1fr); } }
+.programme li { color: var(--ink); counter-increment: pstep; background: var(--surface); border-radius: var(--r-md); padding: 1.25rem; border-left: 5px solid var(--lemon); }
+.programme li::before { content: counter(pstep); display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--black); color: var(--lemon); font: 900 1.1rem var(--font-display); margin-bottom: .6rem; }
+.programme h3 { font-size: 1.15rem; margin-bottom: .3em; }
+.programme p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+/* ---------- At-a-glance panel ---------- */
+.glance { background: var(--surface); border-radius: var(--r-lg); padding: 1.5rem; box-shadow: var(--shadow); }
+.glance dl { display: grid; gap: .6rem 1.25rem; margin: 0; }
+@media (min-width: 560px) { .glance dl { grid-template-columns: 11rem 1fr; } }
+.glance dt { font-weight: 700; }
+.glance dd { margin: 0; color: var(--muted); }
+
+/* ---------- Partnership options ---------- */
+.tiers { display: grid; gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 760px) { .tiers { grid-template-columns: repeat(3, 1fr); } }
+.tier { background: var(--surface); border: 1px solid var(--line); border-top: 6px solid var(--lemon); border-radius: var(--r-md); padding: 1.5rem; }
+.tier:nth-child(2) { border-top-color: var(--black); }
+.tier h3 { font-size: 1.3rem; }
+.tier ul { list-style: none; padding: 0; margin: 0; }
+.tier li { position: relative; padding-left: 1.4rem; margin-bottom: .45rem; font-size: .95rem; color: var(--muted); }
+.tier li::before { content: ""; position: absolute; left: 0; top: .5em; width: .6rem; height: .6rem; background: var(--lemon); border-radius: 50%; }
+
+/* ---------- Pull quote ---------- */
+.pull { border-left: 6px solid var(--lemon); padding: .25rem 0 .25rem 1.25rem; margin: 2rem 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(1.4rem, 3.4vw, 2rem); line-height: 1.2; }
+
+/* ---------- News filters ---------- */
+.filters { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem; }
+.filters button { min-height: 44px; font: 700 .92rem var(--font-body); padding: .5rem 1rem; border-radius: 999px; cursor: pointer; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
+.filters button[aria-selected="true"] { background: var(--black); border-color: var(--black); color: #fff; }
+.news-grid > li[hidden] { display: none; }
+
+/* ---------- Header CTA ---------- */
+.header-cta { background: var(--kit); color: var(--kit-ink); border: 0; border-radius: var(--r-sm); font: 700 .95rem var(--font-body); display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: .6rem 1rem; min-height: 44px; white-space: nowrap; }
+.header-cta:hover { background: var(--kit-hover); }
